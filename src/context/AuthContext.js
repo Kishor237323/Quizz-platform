@@ -61,6 +61,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+ 
   const register = async (userData) => {
     try {
       console.log('AuthContext: Register attempt with:', userData);
@@ -102,7 +103,11 @@ export const AuthProvider = ({ children }) => {
   const clearError = () => {
     setError(null);
   };
-
+  const loginWithGoogle = (userData, token) => {
+    localStorage.setItem('token', token);
+    setUser(userData);
+  };
+ 
   const value = {
     user,
     loading,
@@ -112,6 +117,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     clearError,
     isAuthenticated: !!user,
+    loginWithGoogle,
   };
 
   return (

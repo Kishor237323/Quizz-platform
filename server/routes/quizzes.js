@@ -82,8 +82,11 @@ router.get('/attempts', protect, getUserAttempts); // Private - get user attempt
 router.get('/:id', getQuizById); // Public - get specific quiz
 
 // Protected routes (require authentication)
+
 router.post('/', protect, createQuizValidation, createQuiz);
 router.post('/:id/start', protect, startQuiz);
-router.post('/:id/submit', protect, submitQuizValidation, submitQuiz);
+router.post('/:attemptId/submit', protect, submitQuizValidation, submitQuiz);
 
 module.exports = router; 
+
+

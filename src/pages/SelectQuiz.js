@@ -41,14 +41,14 @@ export default function SelectQuiz() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'rgb(192,132,252,1)' }}>
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-purple-700 mb-6 text-center">Select a Quiz</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center" style={{ color: 'rgb(192,132,252,1)' }}>Select a Quiz</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-lg font-semibold mb-2 text-gray-700">Category</label>
+            <label className="block text-lg font-semibold mb-2 text-slate-900">Category</label>
             <select
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={category}
               onChange={e => setCategory(e.target.value)}
             >
@@ -58,9 +58,9 @@ export default function SelectQuiz() {
             </select>
           </div>
           <div>
-            <label className="block text-lg font-semibold mb-2 text-gray-700">Difficulty</label>
+            <label className="block text-lg font-semibold mb-2 text-slate-900">Difficulty</label>
             <select
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={difficulty}
               onChange={e => setDifficulty(e.target.value)}
             >
