@@ -47,6 +47,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
       label: t('sidebar.profile') || 'Profile',
       href: '/profile'
     },
+    
     {
       icon: Settings,
       label: t('sidebar.settings') || 'Settings',
