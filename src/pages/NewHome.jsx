@@ -25,7 +25,10 @@ export default function NewHome() {
   const [joinCode, setJoinCode] = useState("");
   const handleJoin = (e) => {
     e.preventDefault();
-    if (joinCode.trim().length === 0) return;
+    if (joinCode.trim().length === 0) {
+      alert("Please enter the quiz code.");
+      return;
+    }
     navigate(`/join?code=${joinCode}`);
   };
 
@@ -57,11 +60,11 @@ export default function NewHome() {
                   placeholder="Enter quiz code"
                   value={joinCode}
                   onChange={e => setJoinCode(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-300 shadow-sm w-[200px] text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="px-3 py-2 rounded-lg border border-gray-300 shadow-sm w-[120px] text-black focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2 md:mb-0"
                 />
                 <button
                   type="submit"
-                  className="ml-0 md:ml-2 mt-2 md:mt-0 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="ml-0 md:ml-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                 >
                   Join
                 </button>

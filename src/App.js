@@ -17,6 +17,7 @@ import DarkModeDemo from './pages/DarkModeDemo';
 import Settings from './pages/Settings';
 import ResponsiveSidebarDemo from './pages/ResponsiveSidebarDemo';
 import NewSidebarDemo from './pages/NewSidebarDemo';
+import JoinQuiz from './pages/JoinQuiz';
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/responsive-sidebar" element={<ResponsiveSidebarDemo />} />
             <Route path="/new-sidebar-demo" element={<NewSidebarDemo />} />
+            <Route path="/join" element={<JoinQuiz />} />
           </Routes>
         </Router>
       </AuthProvider>

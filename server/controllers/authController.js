@@ -256,9 +256,19 @@ const logout = async (req, res) => {
   }
 };
 
+async function deleteMe(req, res){
+  try {
+    await User.findByIdAndDelete(req.user.id);
+    res.status(204).json({ message: 'Account deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+};
+
 module.exports = {
   register,
   login,
   getMe,
-  logout
+  logout,
+  deleteMe
 }; 

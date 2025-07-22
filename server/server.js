@@ -5,16 +5,9 @@ const path = require('path');
 require('dotenv').config({ path: './config.env' });
 
 // Import routes
-console.log('Loading auth routes...');
 const authRoutes = require('./routes/auth');
-console.log('Auth routes loaded successfully');
-
-console.log('Loading quiz routes...');
 const quizRoutes = require('./routes/quizzes');
-console.log('Quiz routes loaded successfully');
-
 const contactRoutes = require('./routes/contact');
-
 
 const app = express();
 
@@ -40,17 +33,10 @@ const connectDB = async () => {
 connectDB();
 
 // Routes
-console.log('Setting up auth routes...');
 app.use('/api/auth', authRoutes);
-console.log('Auth routes setup complete');
-
-console.log('Setting up quiz routes...');
-app.use('/api/quizzes', require('./routes/quizzes'));
-console.log('Quiz routes setup complete');
-
-console.log('Setting up contact routes...');
+app.use('/api', authRoutes);
+app.use('/api/quizzes', quizRoutes);
 app.use('/api/contact', contactRoutes);
-console.log('Contact routes setup complete');
 
 // Health check route
 app.get('/api/health', (req, res) => {

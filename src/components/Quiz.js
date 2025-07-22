@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getQuizById, startQuiz, submitQuiz } from '../services/api';
+import { submitQuiz } from '../services/api';
 
 const Quiz = () => {
   const { id } = useParams();
@@ -20,6 +20,7 @@ const Quiz = () => {
   const [results, setResults] = useState(null);
 
   useEffect(() => {
+    console.log("Quiz useEffect: id =", id, "user =", user);
     if (!user) {
       navigate('/login');
       return;
@@ -51,24 +52,15 @@ const Quiz = () => {
     try {
       setLoading(true);
       setError(null);
-
-      // Get quiz details
-      const quizResponse = await getQuizById(id);
-      const quizData = quizResponse.data;
+      console.log("Loading quiz session with id:", id);
+      // Get quiz session details
+      const quizResponse = await fetch(`/api/quizzes/session/${id}`);
+      console.log("quizResponse:", quizResponse);
+      if (!quizResponse.ok) throw new Error('Quiz not found');
+      const quizData = await quizResponse.json();
+      console.log("quizData:", quizData);
       setQuiz(quizData);
-
-      // Start quiz attempt
-      const startResponse = await startQuiz(id);
-      const { attemptId: newAttemptId, timeStarted } = startResponse.data;
-      setAttemptId(newAttemptId);
-
-      // Calculate time left if there's a time limit
-      if (quizData.timeLimit > 0) {
-        const timeElapsed = Math.floor((Date.now() - new Date(timeStarted).getTime()) / 1000 / 60);
-        const remainingTime = Math.max(0, quizData.timeLimit * 60 - timeElapsed * 60);
-        setTimeLeft(remainingTime);
-      }
-
+      // Optionally, handle time limit and attempt logic here if needed
     } catch (err) {
       setError('Failed to load quiz. Please try again.');
       console.error('Error loading quiz:', err);

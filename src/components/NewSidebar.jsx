@@ -59,7 +59,7 @@ const NewSidebar = ({ isOpen, onClose }) => {
                 <span className="text-white font-bold text-lg">Q</span>
               </div>
               <div className="flex flex-col">
-                <h1 className="text-white font-bold text-xl">QUIZZ</h1>
+                <h1 className="text-white font-bold text-xl">IntelQuiz</h1>
                 <p className="text-pink-200 text-xs">Learning Platform</p>
               </div>
             </div>

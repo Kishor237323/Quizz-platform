@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getQuizzes } from "../services/api";
 
 const categories = [
   "General Knowledge",
@@ -17,24 +16,32 @@ export default function SelectQuiz() {
   const [difficulty, setDifficulty] = useState(difficulties[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [quizCode, setQuizCode] = useState("");
+  const [sessionId, setSessionId] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setQuizCode("");
     try {
-      const params = `category=${encodeURIComponent(category)}&difficulty=${encodeURIComponent(difficulty)}`;
-      const response = await getQuizzes(params);
-      const quizzes = response.data || [];
-      if (quizzes.length > 0) {
-        // Navigate to the first matching quiz
-        navigate(`/quiz/${quizzes[0]._id}`);
+      // For demo, you can replace questions with real questions if needed
+      const questions = [];
+      const res = await fetch("/api/quizzes/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category, difficulty, questions })
+      });
+      const data = await res.json();
+      if (res.ok && data.code) {
+        setQuizCode(data.code);
+        setSessionId(data.sessionId);
       } else {
-        setError("No quiz found for the selected category and difficulty.");
+        setError(data.error || "Failed to create quiz session.");
       }
     } catch (err) {
-      setError("Failed to fetch quiz. Please try again.");
+      setError("Failed to create quiz session. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -78,6 +85,13 @@ export default function SelectQuiz() {
             {loading ? "Loading..." : "Start Quiz"}
           </button>
         </form>
+        {quizCode && (
+          <div className="mt-8 p-4 bg-blue-100 border border-blue-300 rounded-xl text-center">
+            <div className="text-lg font-semibold text-blue-700 mb-2">Quiz Code</div>
+            <div className="text-3xl font-bold text-blue-900 mb-2">{quizCode}</div>
+            <div className="text-gray-700">Share this code with participants to join your quiz!</div>
+          </div>
+        )}
       </div>
     </div>
   );

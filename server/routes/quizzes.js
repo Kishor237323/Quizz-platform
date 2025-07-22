@@ -9,8 +9,48 @@ const {
   getUserAttempts 
 } = require('../controllers/quizController');
 const { protect } = require('../middleware/auth');
+const QuizSession = require('../models/QuizSession');
+
+// Helper to generate unique 4-digit code
+async function generateUniqueCode() {
+  let code;
+  let exists = true;
+  while (exists) {
+    code = Math.floor(1000 + Math.random() * 9000).toString();
+    exists = await QuizSession.findOne({ code });
+  }
+  return code;
+}
 
 const router = express.Router();
+
+// Create a quiz session (host flow)
+router.post('/session', async (req, res) => {
+  const { category, difficulty, questions } = req.body;
+  const code = await generateUniqueCode();
+  const session = await QuizSession.create({ code, category, difficulty, questions });
+  res.json({ code, sessionId: session._id });
+});
+
+// Join a quiz session (join flow)
+router.post('/session/join', async (req, res) => {
+  const { code, name } = req.body;
+  const session = await QuizSession.findOne({ code });
+  if (!session) return res.status(404).json({ error: 'Invalid or expired code' });
+  if (session.participants.some(p => p.name === name)) {
+    return res.status(400).json({ error: 'Name already used in this session' });
+  }
+  session.participants.push({ name });
+  await session.save();
+  res.json({ sessionId: session._id, quiz: session });
+});
+
+// Fetch quiz by code
+router.get('/session/:code', async (req, res) => {
+  const session = await QuizSession.findOne({ code: req.params.code });
+  if (!session) return res.status(404).json({ error: 'Invalid or expired code' });
+  res.json(session);
+});
 
 // Validation middleware for creating quiz
 const createQuizValidation = [

@@ -2,9 +2,14 @@ import React, { useState, useEffect } from 'react';
 import SettingsToggle from '../components/SettingsToggle';
 import NewLayout from '../components/NewLayout';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'dark';
+  });
   const [notifications, setNotifications] = useState(true);
   const [emailUpdates, setEmailUpdates] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
@@ -13,13 +18,17 @@ const Settings = () => {
   
   const languages = getLanguages();
   const selectedLanguage = languages.find(lang => lang.code === currentLanguage) || languages[0];
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   // Initialize theme from localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-    setIsDark(theme === 'dark');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, []);
 
   // Apply theme to document
@@ -43,6 +52,17 @@ const Settings = () => {
   const handleLanguageChange = (languageCode) => {
     changeLanguage(languageCode);
     setShowLangDropdown(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Are you sure you want to permanently delete your account? This action cannot be undone.')) return;
+    try {
+      await fetch('/api/users/me', { method: 'DELETE', credentials: 'include' });
+      await logout();
+      navigate('/');
+    } catch (err) {
+      alert('Failed to delete account. Please try again.');
+    }
   };
 
   return (
@@ -71,8 +91,9 @@ const Settings = () => {
                 isDark={isDark}
                 onToggle={toggleDarkMode}
                 label="Dark Mode"
+               
               />
-              
+               
               {/* Language Selector */}
               <div className="flex items-center justify-between py-4">
                 <span className="text-gray-700 dark:text-gray-300 font-medium">Language</span>
@@ -109,7 +130,7 @@ const Settings = () => {
               
               <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Switch between light and dark themes. Your preference will be saved and applied across all pages.
+                  Switch between light and dark themes. Your preference will be saved only for settings.
                 </p>
               </div>
             </div>
@@ -192,7 +213,10 @@ const Settings = () => {
                     <p className="text-gray-900 dark:text-white font-medium">Delete Account</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Permanently delete your account and data</p>
                   </div>
-                  <button className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors duration-200">
+                  <button
+                    className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors duration-200"
+                    onClick={handleDeleteAccount}
+                  >
                     Delete
                   </button>
                 </div>

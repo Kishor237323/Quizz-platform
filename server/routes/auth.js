@@ -1,6 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { register, login, getMe, logout } = require('../controllers/authController');
+const { register, login, getMe, logout, deleteMe } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
 const admin = require('../firebaseAdmin');
@@ -41,6 +41,7 @@ router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
 router.get('/me', protect, getMe);
 router.post('/logout', protect, logout);
+router.delete('/users/me', protect, deleteMe);
 
 
 router.post('/google', async (req, res) => {
@@ -82,3 +83,4 @@ router.post('/google', async (req, res) => {
   }
 });
 module.exports = router; 
+
