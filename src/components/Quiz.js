@@ -1,3 +1,4 @@
+// Quiz.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +20,31 @@ const Quiz = () => {
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState(null);
 
+  // Move handleSubmitQuiz here so it is defined before useEffect and JSX usage
+  const handleSubmitQuiz = async () => {
+    try {
+      // Ensure attemptId is available; this part needs to be handled if it's not set from startQuiz endpoint
+      if (!attemptId) {
+          setError("Cannot submit quiz without an attempt ID. Quiz might not have started correctly.");
+          return;
+      }
+      const answersArray = Object.values(answers);
+      
+      // Make sure submitQuiz service call matches the backend route /api/quizzes/:attemptId/submit
+      const response = await submitQuiz(id, { // This 'id' here is the quiz ID, not attempt ID.
+                                            // The submitQuiz service should use attemptId
+        attemptId, // Pass the correct attemptId
+        answers: answersArray
+      });
+
+      setResults(response.data);
+      setShowResults(true);
+    } catch (err) {
+      setError('Failed to submit quiz. Please try again.');
+      console.error('Error submitting quiz:', err);
+    }
+  };
+
   useEffect(() => {
     console.log("Quiz useEffect: id =", id, "user =", user);
     if (!user) {
@@ -26,7 +52,7 @@ const Quiz = () => {
       return;
     }
     loadQuiz();
-  }, [id, user]);
+  }, [id, user, navigate]); // Added navigate to dependency array for best practice
 
   useEffect(() => {
     if (quiz && quiz.timeLimit > 0) {
@@ -42,7 +68,7 @@ const Quiz = () => {
 
       return () => clearInterval(timer);
     }
-  }, [quiz]);
+  }, [quiz, handleSubmitQuiz]); // Added handleSubmitQuiz to dependency array for best practice
 
   useEffect(() => {
     setQuestionStartTime(Date.now());
@@ -53,16 +79,23 @@ const Quiz = () => {
       setLoading(true);
       setError(null);
       console.log("Loading quiz session with id:", id);
-      // Get quiz session details
-      const quizResponse = await fetch(`/api/quizzes/session/${id}`);
+      
+      // --- CHANGE THIS LINE ---
+      // Fetch quiz session details from the new endpoint that uses ID
+      const quizResponse = await fetch(`/api/quizzes/session/id/${id}`); 
+      // --- END CHANGE ---
+
       console.log("quizResponse:", quizResponse);
-      if (!quizResponse.ok) throw new Error('Quiz not found');
+      if (!quizResponse.ok) {
+          const errorData = await quizResponse.json();
+          throw new Error(errorData.error || 'Quiz not found');
+      }
       const quizData = await quizResponse.json();
       console.log("quizData:", quizData);
-      setQuiz(quizData);
+      setQuiz(quizData); // This assumes quizData directly contains the session object
       // Optionally, handle time limit and attempt logic here if needed
     } catch (err) {
-      setError('Failed to load quiz. Please try again.');
+      setError(err.message || 'Failed to load quiz. Please try again.'); // Use err.message for more specific errors
       console.error('Error loading quiz:', err);
     } finally {
       setLoading(false);
@@ -91,23 +124,6 @@ const Quiz = () => {
   const handlePreviousQuestion = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(prev => prev - 1);
-    }
-  };
-
-  const handleSubmitQuiz = async () => {
-    try {
-      const answersArray = Object.values(answers);
-      
-      const response = await submitQuiz(id, {
-        attemptId,
-        answers: answersArray
-      });
-
-      setResults(response.data);
-      setShowResults(true);
-    } catch (err) {
-      setError('Failed to submit quiz. Please try again.');
-      console.error('Error submitting quiz:', err);
     }
   };
 
@@ -236,6 +252,17 @@ const Quiz = () => {
     );
   }
 
+  // Ensure quiz and its questions are loaded before accessing properties
+  if (!quiz || !quiz.questions || quiz.questions.length === 0) {
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
+            <div className="text-center text-gray-600">
+                No quiz data found or questions available.
+            </div>
+        </div>
+    );
+  }
+  
   const currentQ = quiz.questions[currentQuestion];
 
   return (
@@ -245,7 +272,7 @@ const Quiz = () => {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-semibold text-gray-800">{quiz.title}</h1>
+              <h1 className="text-xl font-semibold text-gray-800">{quiz.title}</h1> {/* Assuming quiz object has a title, adjust if not */}
               <p className="text-sm text-gray-600">{quiz.category} • {quiz.difficulty}</p>
             </div>
             <div className="flex items-center gap-4">
@@ -356,4 +383,4 @@ const Quiz = () => {
   );
 };
 
-export default Quiz; 
+export default Quiz;

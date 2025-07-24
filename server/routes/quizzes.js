@@ -1,3 +1,4 @@
+// quizzes.js
 const express = require('express');
 const { body } = require('express-validator');
 const { 
@@ -10,6 +11,7 @@ const {
 } = require('../controllers/quizController');
 const { protect } = require('../middleware/auth');
 const QuizSession = require('../models/QuizSession');
+const Quiz = require('../models/Quiz');
 
 // Helper to generate unique 4-digit code
 async function generateUniqueCode() {
@@ -26,9 +28,24 @@ const router = express.Router();
 
 // Create a quiz session (host flow)
 router.post('/session', async (req, res) => {
-  const { category, difficulty, questions } = req.body;
+  const { category, difficulty } = req.body;
   const code = await generateUniqueCode();
-  const session = await QuizSession.create({ code, category, difficulty, questions });
+
+  // Fetch questions from Quiz model
+  const quizTemplate = await Quiz.findOne({ category, difficulty });
+  if (!quizTemplate || !quizTemplate.questions || quizTemplate.questions.length === 0) {
+    return res.status(404).json({ error: 'No questions found for this category/difficulty' });
+  }
+
+  // Copy questions into the session
+  const session = await QuizSession.create({
+    code,
+    category,
+    difficulty,
+    questions: quizTemplate.questions, // store a copy
+    participants: []
+  });
+
   res.json({ code, sessionId: session._id });
 });
 
@@ -45,12 +62,27 @@ router.post('/session/join', async (req, res) => {
   res.json({ sessionId: session._id, quiz: session });
 });
 
-// Fetch quiz by code
+// Fetch quiz by code (existing route)
 router.get('/session/:code', async (req, res) => {
   const session = await QuizSession.findOne({ code: req.params.code });
   if (!session) return res.status(404).json({ error: 'Invalid or expired code' });
   res.json(session);
 });
+
+// --- ADD THIS NEW ROUTE ---
+// Fetch quiz session by its MongoDB _id (session ID)
+router.get('/session/id/:id', async (req, res) => {
+  try {
+    const session = await QuizSession.findById(req.params.id); // Use findById for MongoDB _id
+    if (!session) {
+      return res.status(404).json({ error: 'Quiz session not found for this ID' });
+    }
+    res.json(session);
+  } catch (error) {
+    // error handling
+  }
+});
+// --- END NEW ROUTE ---
 
 // Validation middleware for creating quiz
 const createQuizValidation = [
@@ -127,6 +159,4 @@ router.post('/', protect, createQuizValidation, createQuiz);
 router.post('/:id/start', protect, startQuiz);
 router.post('/:attemptId/submit', protect, submitQuizValidation, submitQuiz);
 
-module.exports = router; 
-
-
+module.exports = router;
